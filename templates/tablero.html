@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block titulo %}Tablero{% endblock %}
+{% block contenido %}
+<section class="tarjeta">
+  <h1>Tablero de gastos</h1>
+  <p>El tablero muestra gráficos de tus gastos. Es una aplicación aparte, hecha con Streamlit, y para leer tus datos necesita un token personal.</p>
+  {% if url_tablero %}
+    <p><a class="boton secundario" href="{{ url_tablero }}">Abrir el tablero</a></p>
+  {% endif %}
+
+  {% if token %}
+    <p class="aviso aviso-ok">Copiá este token ahora: no se vuelve a mostrar.</p>
+    <p><code class="token">{{ token }}</code></p>
+    <p>Dirección de la aplicación: <code>{{ url_app }}</code></p>
+  {% endif %}
+
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="boton" type="submit">Generar un token nuevo</button>
+  </form>
+  <p><small>Al generar uno nuevo, el anterior deja de funcionar.</small></p>
+</section>
+{% endblock %}

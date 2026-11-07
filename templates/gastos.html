@@ -21,6 +21,7 @@
 <section class="tarjeta">
   <h2>Nuevo gasto</h2>
   <form method="post" novalidate data-validar="gasto">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     {% include "_form_gasto.html" %}
     <button class="boton" type="submit">Agregar</button>
   </form>
@@ -42,6 +43,7 @@
           <td class="acciones">
             <a href="{{ url_for('editar_gasto', gasto_id=g.id) }}">Editar</a>
             <form method="post" action="{{ url_for('borrar_gasto', gasto_id=g.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="enlace peligro" type="submit">Borrar</button>
             </form>
           </td>

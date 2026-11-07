@@ -5,6 +5,7 @@
   <h1>Ingresar</h1>
   {% if error %}<p class="aviso aviso-error">{{ error }}</p>{% endif %}
   <form method="post" novalidate data-validar="login">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label for="nombre">Usuario</label>
     <input id="nombre" name="nombre" value="{{ nombre }}" required autocomplete="username">
     <small class="error" data-error-de="nombre"></small>

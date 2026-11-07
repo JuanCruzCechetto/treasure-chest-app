@@ -1,0 +1,13 @@
+# Temas del tablero: siguen el modo del navegador, o el menú de Streamlit (tres puntos, Settings).
+[theme.light]
+backgroundColor = "#ffffff"
+secondaryBackgroundColor = "#f2f2f2"
+textColor = "#000000"
+primaryColor = "#000000"
+
+[theme.dark]
+backgroundColor = "#000000"
+secondaryBackgroundColor = "#1c1c1c"
+textColor = "#ffffff"
+# Gris: Streamlit escribe en blanco sobre este color (por ejemplo, en las etiquetas de filtros)
+primaryColor = "#737373"

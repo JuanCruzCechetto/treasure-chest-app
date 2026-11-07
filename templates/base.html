@@ -24,9 +24,13 @@
     <nav>
       {% if session.usuario_id %}
         <a href="{{ url_for('gastos') }}">Mis gastos</a>
+        <a href="{{ url_for('tablero') }}">Tablero</a>
         <a href="{{ url_for('api_resumen') }}">API</a>
         <span class="usuario">{{ session.nombre }}</span>
-        <a href="{{ url_for('logout') }}">Salir</a>
+        <form class="en-linea" method="post" action="{{ url_for('logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="enlace" type="submit">Salir</button>
+        </form>
       {% else %}
         <a href="{{ url_for('login') }}">Ingresar</a>
         <a href="{{ url_for('registro') }}">Registrarse</a>

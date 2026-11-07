@@ -4,6 +4,7 @@
 <section class="tarjeta angosta">
   <h1>Crear cuenta</h1>
   <form method="post" novalidate data-validar="registro">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label for="nombre">Usuario</label>
     <input id="nombre" name="nombre" value="{{ nombre }}" required minlength="3" maxlength="20"
            pattern="[A-Za-z0-9_]{3,20}" autocomplete="username">

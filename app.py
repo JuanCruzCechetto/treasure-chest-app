@@ -1,6 +1,8 @@
 """Treasure Chest App — gestor de gastos personales con Flask."""
+import hashlib
 import os
 import re
+import secrets
 from datetime import date
 from functools import wraps
 
@@ -8,14 +10,18 @@ import requests
 from dotenv import load_dotenv
 from flask import (Flask, flash, jsonify, redirect, render_template, request,
                    session, url_for)
+from flask_wtf.csrf import CSRFError, CSRFProtect
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from db import cerrar_db, inicializar_db, obtener_db
 
-load_dotenv()  # lee el archivo .env (que NO se entrega)
+# Lee el archivo .env (que NO se entrega) de la carpeta del proyecto
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.getenv("SECRET_KEY", "solo-para-desarrollo")
+app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]  # sin clave, la app no arranca
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+CSRFProtect(app)
 app.teardown_appcontext(cerrar_db)
 inicializar_db()
 
@@ -48,7 +54,7 @@ def validar_gasto(form):
     monto = None
     try:
         monto = round(float(monto_txt), 2)
-        if monto <= 0 or monto > 100_000_000:
+        if not monto > 0 or monto > 100_000_000:  # "not >" también rechaza NaN
             errores["monto"] = "El monto tiene que ser mayor a 0."
     except ValueError:
         errores["monto"] = "El monto tiene que ser un número."
@@ -130,7 +136,7 @@ def login():
     return render_template("login.html", error=error, nombre=nombre), (401 if error else 200)
 
 
-@app.route("/logout")
+@app.route("/logout", methods=["POST"])
 def logout():
     session.clear()
     return redirect(url_for("inicio"))
@@ -193,7 +199,50 @@ def borrar_gasto(gasto_id):
     return redirect(url_for("gastos"))
 
 
+# ---------------------------------------------------------------- tablero
+def resumen_token(token):
+    return hashlib.sha256(token.encode()).hexdigest()
+
+
+@app.route("/tablero", methods=["GET", "POST"])
+@login_requerido
+def tablero():
+    """Genera el token con el que el tablero de Streamlit lee los datos. Se muestra una sola vez."""
+    token = None
+    if request.method == "POST":
+        token = secrets.token_urlsafe(32)
+        db = obtener_db()
+        db.execute("UPDATE usuarios SET token_hash = ? WHERE id = ?",
+                   (resumen_token(token), session["usuario_id"]))
+        db.commit()
+    return render_template("tablero.html", token=token, url_tablero=os.getenv("URL_TABLERO", ""),
+                           url_app=request.host_url.rstrip("/"))
+
+
 # ---------------------------------------------------------------- API JSON
+def usuario_por_token():
+    """Devuelve el id del dueño del token enviado en Authorization, o None."""
+    encabezado = request.headers.get("Authorization", "")
+    if not encabezado.startswith("Bearer "):
+        return None
+    fila = obtener_db().execute("SELECT id FROM usuarios WHERE token_hash = ?",
+                                (resumen_token(encabezado[len("Bearer "):]),)).fetchone()
+    return fila["id"] if fila else None
+
+
+@app.route("/api/gastos")
+def api_gastos():
+    """Gastos de un solo usuario, identificado por su token o por su sesión. Lo usa el tablero."""
+    uid = usuario_por_token() or session.get("usuario_id")
+    if uid is None:
+        return jsonify({"error": "No autorizado"}), 401
+    filas = obtener_db().execute(
+        "SELECT descripcion, monto, categoria, fecha FROM gastos WHERE usuario_id = ? ORDER BY fecha",
+        (uid,)).fetchall()
+    return jsonify({"gastos": [dict(f) for f in filas], "dolar": cotizacion_dolar()})
+
+
+# ---------------------------------------------------------------- API JSON (con sesión)
 @app.route("/api/resumen")
 @login_requerido
 def api_resumen():
@@ -214,6 +263,12 @@ def api_resumen():
 
 
 # ---------------------------------------------------------------- errores
+@app.errorhandler(CSRFError)
+def error_csrf(_e):
+    return render_template("error.html", codigo=400,
+                           mensaje="El formulario venció. Volvé atrás, recargá la página e intentá de nuevo."), 400
+
+
 @app.errorhandler(404)
 def no_encontrado(_e):
     return render_template("error.html", codigo=404, mensaje="La página no existe."), 404

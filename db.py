@@ -4,13 +4,15 @@ import sqlite3
 
 from flask import g
 
-RUTA_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)), "gastos.db")
+RUTA_DB = os.environ.get("BASE_DE_DATOS",
+                         os.path.join(os.path.dirname(os.path.abspath(__file__)), "gastos.db"))
 
 ESQUEMA = """
 CREATE TABLE IF NOT EXISTS usuarios (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre        TEXT    NOT NULL UNIQUE,
     hash_clave    TEXT    NOT NULL,
+    token_hash    TEXT,
     creado        TEXT    NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -42,5 +44,13 @@ def cerrar_db(_error=None):
 
 def inicializar_db():
     """Crea las tablas si no existen. Los datos persisten entre reinicios."""
-    with sqlite3.connect(RUTA_DB) as con:
+    con = sqlite3.connect(RUTA_DB)
+    try:
         con.executescript(ESQUEMA)
+        # Bases creadas antes de que existiera el tablero publicado
+        columnas = [fila[1] for fila in con.execute("PRAGMA table_info(usuarios)")]
+        if "token_hash" not in columnas:
+            con.execute("ALTER TABLE usuarios ADD COLUMN token_hash TEXT")
+            con.commit()
+    finally:
+        con.close()

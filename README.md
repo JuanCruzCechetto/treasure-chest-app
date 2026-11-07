@@ -11,7 +11,10 @@ python -m venv .venv
 pip install -r requirements.txt
 cp .env.example .env        # en Windows: copy .env.example .env  (y editar SECRET_KEY)
 python app.py               # http://127.0.0.1:5000
-streamlit run dashboard.py  # tablero en http://localhost:8501 (en otra terminal)
+
+# Tablero, en otra terminal y con sus propias dependencias
+pip install -r tablero/requirements.txt
+streamlit run tablero/dashboard.py  # http://localhost:8501; el token se genera en /tablero
 ```
 
 Para generar una SECRET_KEY: `python -c "import secrets; print(secrets.token_hex(32))"`
@@ -21,14 +24,14 @@ Para generar una SECRET_KEY: `python -c "import secrets; print(secrets.token_hex
 | Requisito | Dónde |
 |---|---|
 | Flask + entorno virtual + dependencias | `requirements.txt`, `.venv` (no se entrega) |
-| Al menos 4 rutas | `/`, `/registro`, `/login`, `/logout`, `/gastos`, `/gastos/<id>/editar`, `/gastos/<id>/borrar`, `/api/resumen` |
+| Al menos 4 rutas | `/`, `/registro`, `/login`, `/logout`, `/gastos`, `/gastos/<id>/editar`, `/gastos/<id>/borrar`, `/tablero`, `/api/resumen`, `/api/gastos` |
 | Plantillas Jinja2 que heredan de una base | `templates/base.html` + `{% extends %}` en todas |
 | Validación en el servidor y en el cliente | `validar_gasto()` y `registro()` en `app.py`; `static/validacion.js` |
 | SQLite persistente | `db.py` → `gastos.db` |
 | Registro/login con contraseña hasheada | `generate_password_hash` / `check_password_hash` (scrypt, Werkzeug) |
-| Endpoint propio que devuelve JSON | `GET /api/resumen` |
+| Endpoint propio que devuelve JSON | `GET /api/resumen` y `GET /api/gastos` |
 | Servicio externo con `requests` + manejo de falla/demora | `cotizacion_dolar()`: `timeout=3`, captura errores y la app sigue andando |
-| Opción elegida: tablero Streamlit + Pandas | `dashboard.py` |
+| Opción elegida: tablero Streamlit + Pandas | `tablero/dashboard.py`, lee `/api/gastos` con un token personal |
 | Claves fuera del código | `.env` (en `.gitignore`), plantilla en `.env.example` |
 
 ## Publicarla (PythonAnywhere, cuenta gratuita)
