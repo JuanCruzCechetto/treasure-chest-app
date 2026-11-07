@@ -49,5 +49,3 @@ Ojo: las cuentas gratuitas restringen los sitios externos a una lista permitida;
 está en esa lista, la app igual funciona y muestra "Cotización no disponible" (es justamente
 el manejo de falla que pide la consigna).
 
-## Qué NO se entrega
-`.venv/`, `gastos.db`, `.env`, `__pycache__/` (ya están en `.gitignore`).
