@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block titulo %}Mis gastos{% endblock %}
+{% block contenido %}
+<section class="resumen">
+  <div class="tarjeta dato">
+    <span>Total gastado</span>
+    <strong>$ {{ "{:,.2f}".format(total) }}</strong>
+  </div>
+  <div class="tarjeta dato">
+    <span>En dólares (oficial venta)</span>
+    {% if dolar %}
+      <strong>US$ {{ "{:,.2f}".format(total / dolar) }}</strong>
+      <small>1 US$ = $ {{ "{:,.2f}".format(dolar) }}</small>
+    {% else %}
+      <strong>—</strong>
+      <small>Cotización no disponible en este momento.</small>
+    {% endif %}
+  </div>
+</section>
+
+<section class="tarjeta">
+  <h2>Nuevo gasto</h2>
+  <form method="post" novalidate data-validar="gasto">
+    {% include "_form_gasto.html" %}
+    <button class="boton" type="submit">Agregar</button>
+  </form>
+</section>
+
+<section class="tarjeta">
+  <h2>Historial</h2>
+  {% if gastos %}
+  <div class="tabla-scroll">
+    <table>
+      <thead><tr><th>Fecha</th><th>Descripción</th><th>Categoría</th><th class="num">Monto</th><th></th></tr></thead>
+      <tbody>
+      {% for g in gastos %}
+        <tr>
+          <td>{{ g.fecha }}</td>
+          <td>{{ g.descripcion }}</td>
+          <td><span class="etiqueta">{{ g.categoria }}</span></td>
+          <td class="num">$ {{ "{:,.2f}".format(g.monto) }}</td>
+          <td class="acciones">
+            <a href="{{ url_for('editar_gasto', gasto_id=g.id) }}">Editar</a>
+            <form method="post" action="{{ url_for('borrar_gasto', gasto_id=g.id) }}">
+              <button class="enlace peligro" type="submit">Borrar</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <p class="vacio">Todavía no cargaste gastos.</p>
+  {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es" data-tema="dia">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block titulo %}Inicio{% endblock %} · Treasure Chest App</title>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <script>
+    // Se aplica el tema antes de dibujar la página para evitar un parpadeo.
+    (function () {
+      var tema = null;
+      try { tema = localStorage.getItem('tema'); } catch (e) {}
+      if (!tema) tema = matchMedia('(prefers-color-scheme: dark)').matches ? 'noche' : 'dia';
+      document.documentElement.dataset.tema = tema;
+    })();
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="barra">
+    <a class="marca" href="{{ url_for('inicio') }}">
+      {% include "_logo.html" %}<span>Treasure Chest App</span>
+    </a>
+    <nav>
+      {% if session.usuario_id %}
+        <a href="{{ url_for('gastos') }}">Mis gastos</a>
+        <a href="{{ url_for('api_resumen') }}">API</a>
+        <span class="usuario">{{ session.nombre }}</span>
+        <a href="{{ url_for('logout') }}">Salir</a>
+      {% else %}
+        <a href="{{ url_for('login') }}">Ingresar</a>
+        <a href="{{ url_for('registro') }}">Registrarse</a>
+      {% endif %}
+      <button id="cambiar-tema" class="boton-tema" type="button" aria-label="Cambiar tema">
+        <span class="solo-dia">☾ Noche</span><span class="solo-noche">☀ Día</span>
+      </button>
+    </nav>
+  </header>
+
+  <main>
+    {% with mensajes = get_flashed_messages(with_categories=true) %}
+      {% for tipo, texto in mensajes %}
+        <p class="aviso aviso-{{ tipo }}">{{ texto }}</p>
+      {% endfor %}
+    {% endwith %}
+    {% block contenido %}{% endblock %}
+  </main>
+
+  <footer>Treasure Chest App · Tecnicatura Universitaria en Programación</footer>
+  <script src="{{ url_for('static', filename='tema.js') }}"></script>
+  <script src="{{ url_for('static', filename='validacion.js') }}"></script>
+</body>
+</html>

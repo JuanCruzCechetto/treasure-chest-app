@@ -1,0 +1,28 @@
+{# Campos compartidos por "nuevo gasto" y "editar gasto" #}
+<div class="campos">
+  <div>
+    <label for="descripcion">Descripción</label>
+    <input id="descripcion" name="descripcion" value="{{ datos.descripcion or '' }}" required maxlength="100">
+    <small class="error" data-error-de="descripcion">{{ errores.descripcion }}</small>
+  </div>
+  <div>
+    <label for="monto">Monto ($)</label>
+    <input id="monto" name="monto" type="number" step="0.01" min="0.01" value="{{ datos.monto or '' }}" required>
+    <small class="error" data-error-de="monto">{{ errores.monto }}</small>
+  </div>
+  <div>
+    <label for="categoria">Categoría</label>
+    <select id="categoria" name="categoria" required>
+      <option value="">Elegí…</option>
+      {% for c in categorias %}
+        <option value="{{ c }}" {{ 'selected' if datos.categoria == c }}>{{ c }}</option>
+      {% endfor %}
+    </select>
+    <small class="error" data-error-de="categoria">{{ errores.categoria }}</small>
+  </div>
+  <div>
+    <label for="fecha">Fecha</label>
+    <input id="fecha" name="fecha" type="date" value="{{ datos.fecha or '' }}" required>
+    <small class="error" data-error-de="fecha">{{ errores.fecha }}</small>
+  </div>
+</div>

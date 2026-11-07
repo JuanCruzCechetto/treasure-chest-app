@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block titulo %}Editar gasto{% endblock %}
+{% block contenido %}
+<section class="tarjeta">
+  <h1>Editar gasto</h1>
+  <form method="post" novalidate data-validar="gasto">
+    {% include "_form_gasto.html" %}
+    <button class="boton" type="submit">Guardar cambios</button>
+    <a class="boton secundario" href="{{ url_for('gastos') }}">Cancelar</a>
+  </form>
+</section>
+{% endblock %}

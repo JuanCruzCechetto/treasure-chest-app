@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block titulo %}Registro{% endblock %}
+{% block contenido %}
+<section class="tarjeta angosta">
+  <h1>Crear cuenta</h1>
+  <form method="post" novalidate data-validar="registro">
+    <label for="nombre">Usuario</label>
+    <input id="nombre" name="nombre" value="{{ nombre }}" required minlength="3" maxlength="20"
+           pattern="[A-Za-z0-9_]{3,20}" autocomplete="username">
+    <small class="error" data-error-de="nombre">{{ errores.nombre }}</small>
+
+    <label for="clave">Contraseña</label>
+    <input id="clave" name="clave" type="password" required minlength="8" autocomplete="new-password">
+    <small class="error" data-error-de="clave">{{ errores.clave }}</small>
+
+    <label for="confirmar">Repetir contraseña</label>
+    <input id="confirmar" name="confirmar" type="password" required autocomplete="new-password">
+    <small class="error" data-error-de="confirmar">{{ errores.confirmar }}</small>
+
+    <button class="boton" type="submit">Registrarme</button>
+  </form>
+</section>
+{% endblock %}
