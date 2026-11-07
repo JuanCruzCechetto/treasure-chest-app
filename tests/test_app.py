@@ -1,4 +1,4 @@
-"""Pruebas de la aplicación. Se ejecutan con: python -m pytest"""
+"""python -m pytest"""
 import os
 import sqlite3
 import sys

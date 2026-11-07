@@ -11,24 +11,50 @@ python -m venv .venv
 pip install -r requirements.txt
 cp .env.example .env        # en Windows: copy .env.example .env  (y editar SECRET_KEY)
 python app.py               # http://127.0.0.1:5000
-streamlit run dashboard.py  # tablero en http://localhost:8501 (en otra terminal)
 ```
 
 Para generar una SECRET_KEY: `python -c "import secrets; print(secrets.token_hex(32))"`
+
+### Tablero de Streamlit
+
+Tiene sus propias dependencias. En otra terminal, con el entorno activado:
+
+```bash
+pip install -r tablero/requirements.txt
+streamlit run tablero/dashboard.py   # http://localhost:8501
+```
+
+El tablero es una aplicación aparte: no comparte la sesión de Flask, así que lee los datos
+de `/api/gastos` con un token personal. El token se genera en la página **Tablero** de la app,
+se muestra una sola vez (en la base se guarda solo su resumen SHA-256) y al generar uno nuevo
+el anterior deja de funcionar. En el panel izquierdo del tablero se pegan la dirección de la
+app y el token.
+
+## Rutas
+
+| Ruta | Para qué sirve |
+|---|---|
+| `/` | Inicio |
+| `/registro`, `/login`, `/logout` | Cuenta de usuario |
+| `/gastos` | Listado y carga de gastos |
+| `/gastos/<id>/editar`, `/gastos/<id>/borrar` | Editar y borrar un gasto propio |
+| `/tablero` | Generar el token del tablero |
+| `/api/gastos` | JSON con los gastos del usuario (sesión o `Authorization: Bearer <token>`); lo usa el tablero |
+| `/api/resumen` | JSON con el total en pesos y dólares y el gasto por categoría (requiere sesión) |
 
 ## Cómo cumple la consigna
 
 | Requisito | Dónde |
 |---|---|
 | Flask + entorno virtual + dependencias | `requirements.txt`, `.venv` (no se entrega) |
-| Al menos 4 rutas | `/`, `/registro`, `/login`, `/logout`, `/gastos`, `/gastos/<id>/editar`, `/gastos/<id>/borrar`, `/api/resumen` |
+| Al menos 4 rutas | Diez rutas: ver la tabla de **Rutas** |
 | Plantillas Jinja2 que heredan de una base | `templates/base.html` + `{% extends %}` en todas |
-| Validación en el servidor y en el cliente | `validar_gasto()` y `registro()` en `app.py`; `static/validacion.js` |
+| Validación en el servidor y en el cliente | `validar_gasto()` y `registro()` en `app.py`; `static/validacion.js`; protección CSRF con Flask-WTF |
 | SQLite persistente | `db.py` → `gastos.db` |
 | Registro/login con contraseña hasheada | `generate_password_hash` / `check_password_hash` (scrypt, Werkzeug) |
-| Endpoint propio que devuelve JSON | `GET /api/resumen` |
+| Endpoints propios que devuelven JSON | `GET /api/gastos` y `GET /api/resumen` |
 | Servicio externo con `requests` + manejo de falla/demora | `cotizacion_dolar()`: `timeout=3`, captura errores y la app sigue andando |
-| Opción elegida: tablero Streamlit + Pandas | `dashboard.py` |
+| Opción elegida: tablero Streamlit + Pandas | `tablero/dashboard.py` (dependencias en `tablero/requirements.txt`) |
 | Claves fuera del código | `.env` (en `.gitignore`), plantilla en `.env.example` |
 
 ## Publicarla (PythonAnywhere, cuenta gratuita)

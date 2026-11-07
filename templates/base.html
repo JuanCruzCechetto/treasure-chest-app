@@ -6,7 +6,7 @@
   <title>{% block titulo %}Inicio{% endblock %} · Treasure Chest App</title>
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
   <script>
-    // Se aplica el tema antes de dibujar la página para evitar un parpadeo.
+    // tema antes de cargar el css
     (function () {
       var tema = null;
       try { tema = localStorage.getItem('tema'); } catch (e) {}

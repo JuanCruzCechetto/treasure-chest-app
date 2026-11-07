@@ -1,4 +1,4 @@
-"""Acceso a la base SQLite: conexión y creación de tablas."""
+"""Conexion y tablas de SQLite."""
 import os
 import sqlite3
 
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS gastos (
 
 
 def obtener_db():
-    """Devuelve una conexión por pedido (se guarda en g)."""
+    """Una conexion por request, guardada en g."""
     if "db" not in g:
         g.db = sqlite3.connect(RUTA_DB)
         g.db.row_factory = sqlite3.Row
@@ -43,11 +43,10 @@ def cerrar_db(_error=None):
 
 
 def inicializar_db():
-    """Crea las tablas si no existen. Los datos persisten entre reinicios."""
     con = sqlite3.connect(RUTA_DB)
     try:
         con.executescript(ESQUEMA)
-        # Bases creadas antes de que existiera el tablero publicado
+        # bases viejas sin token_hash
         columnas = [fila[1] for fila in con.execute("PRAGMA table_info(usuarios)")]
         if "token_hash" not in columnas:
             con.execute("ALTER TABLE usuarios ADD COLUMN token_hash TEXT")

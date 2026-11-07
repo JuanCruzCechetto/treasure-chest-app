@@ -1,8 +1,6 @@
-"""Tablero de datos con Streamlit y Pandas.
+"""Tablero de gastos. Lee /api/gastos de la app con el token del usuario.
 
-Ejecutar con:  streamlit run tablero/dashboard.py
-Se publica aparte de la app Flask, así que lee los datos de su JSON con un token personal.
-Cada usuario ve solo sus propios gastos.
+streamlit run tablero/dashboard.py
 """
 import os
 
@@ -11,7 +9,7 @@ import requests
 import streamlit as st
 
 st.set_page_config(page_title="Treasure Chest App · Tablero", layout="wide")
-st.title("Treasure Chest App — Tablero de gastos")
+st.title("Treasure Chest App: tablero de gastos")
 
 
 @st.cache_data(ttl=30, show_spinner="Trayendo tus gastos...")
@@ -49,7 +47,7 @@ if df.empty:
     st.stop()
 df["fecha"] = pd.to_datetime(df["fecha"])
 
-# Filtros
+# filtros
 st.sidebar.header("Filtros")
 desde, hasta = df["fecha"].min().date(), df["fecha"].max().date()
 rango = st.sidebar.date_input("Período", (desde, hasta), min_value=desde, max_value=hasta)
@@ -62,13 +60,12 @@ def pesos(valor):
     return f"$ {valor:,.0f}".replace(",", ".")
 
 
-# Indicadores
 c1, c2, c3 = st.columns(3)
 c1.metric("Total gastado", pesos(datos["monto"].sum()))
 c2.metric("Cantidad de gastos", len(datos))
-c3.metric("Gasto promedio", pesos(datos["monto"].mean()) if len(datos) else "—")
+c3.metric("Gasto promedio", pesos(datos["monto"].mean()) if len(datos) else "-")
 
-# Gráficos: negro en modo día y blanco en modo noche
+# color segun el tema
 COLOR = "#ffffff" if st.context.theme.type == "dark" else "#000000"
 izq, der = st.columns(2)
 with izq:

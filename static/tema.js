@@ -1,4 +1,4 @@
-// Alterna entre modo día (fondo blanco, texto negro) y modo noche (fondo negro, texto blanco).
+// Boton de modo dia / noche
 (function () {
   const raiz = document.documentElement;
   const boton = document.getElementById('cambiar-tema');
@@ -6,6 +6,6 @@
   boton.addEventListener('click', function () {
     const nuevo = raiz.dataset.tema === 'noche' ? 'dia' : 'noche';
     raiz.dataset.tema = nuevo;
-    try { localStorage.setItem('tema', nuevo); } catch (e) { /* sin almacenamiento: solo dura esta página */ }
+    try { localStorage.setItem('tema', nuevo); } catch (e) {}
   });
 })();

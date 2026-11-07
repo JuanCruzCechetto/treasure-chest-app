@@ -1,4 +1,4 @@
-"""Treasure Chest App — gestor de gastos personales con Flask."""
+"""Treasure Chest App: gastos personales."""
 import hashlib
 import os
 import re
@@ -15,11 +15,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from db import cerrar_db, inicializar_db, obtener_db
 
-# Lee el archivo .env (que NO se entrega) de la carpeta del proyecto
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]  # sin clave, la app no arranca
+app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
 CSRFProtect(app)
 app.teardown_appcontext(cerrar_db)
@@ -29,7 +28,7 @@ CATEGORIAS = ["Comida", "Transporte", "Servicios", "Salud", "Ocio", "Educación"
 URL_DOLAR = os.getenv("URL_DOLAR", "https://dolarapi.com/v1/dolares/oficial")
 
 
-# ---------------------------------------------------------------- utilidades
+# utilidades
 def login_requerido(vista):
     @wraps(vista)
     def envoltura(*args, **kwargs):
@@ -41,7 +40,7 @@ def login_requerido(vista):
 
 
 def validar_gasto(form):
-    """Validación del lado del servidor. Devuelve (datos, errores)."""
+    """Devuelve (datos, errores)."""
     errores = {}
     descripcion = form.get("descripcion", "").strip()
     monto_txt = form.get("monto", "").strip().replace(",", ".")
@@ -54,7 +53,7 @@ def validar_gasto(form):
     monto = None
     try:
         monto = round(float(monto_txt), 2)
-        if not monto > 0 or monto > 100_000_000:  # "not >" también rechaza NaN
+        if not monto > 0 or monto > 100_000_000:  # not > tambien descarta NaN
             errores["monto"] = "El monto tiene que ser mayor a 0."
     except ValueError:
         errores["monto"] = "El monto tiene que ser un número."
@@ -75,7 +74,7 @@ def validar_gasto(form):
 
 
 def cotizacion_dolar():
-    """Consume un servicio externo. Si falla o tarda, devuelve None sin romper la app."""
+    """Cotizacion oficial (venta). None si la API falla o no responde."""
     try:
         r = requests.get(URL_DOLAR, timeout=3)
         r.raise_for_status()
@@ -85,7 +84,7 @@ def cotizacion_dolar():
         return None
 
 
-# ---------------------------------------------------------------- rutas web
+# rutas
 @app.route("/")
 def inicio():
     return render_template("inicio.html")
@@ -199,7 +198,7 @@ def borrar_gasto(gasto_id):
     return redirect(url_for("gastos"))
 
 
-# ---------------------------------------------------------------- tablero
+# tablero
 def resumen_token(token):
     return hashlib.sha256(token.encode()).hexdigest()
 
@@ -207,7 +206,7 @@ def resumen_token(token):
 @app.route("/tablero", methods=["GET", "POST"])
 @login_requerido
 def tablero():
-    """Genera el token con el que el tablero de Streamlit lee los datos. Se muestra una sola vez."""
+    """Genera un token nuevo para el tablero. Se guarda solo el hash."""
     token = None
     if request.method == "POST":
         token = secrets.token_urlsafe(32)
@@ -219,9 +218,9 @@ def tablero():
                            url_app=request.host_url.rstrip("/"))
 
 
-# ---------------------------------------------------------------- API JSON
+# api
 def usuario_por_token():
-    """Devuelve el id del dueño del token enviado en Authorization, o None."""
+    """id del usuario segun el header Authorization, o None."""
     encabezado = request.headers.get("Authorization", "")
     if not encabezado.startswith("Bearer "):
         return None
@@ -232,7 +231,7 @@ def usuario_por_token():
 
 @app.route("/api/gastos")
 def api_gastos():
-    """Gastos de un solo usuario, identificado por su token o por su sesión. Lo usa el tablero."""
+    """Gastos del usuario (token o sesion). La usa el tablero."""
     uid = usuario_por_token() or session.get("usuario_id")
     if uid is None:
         return jsonify({"error": "No autorizado"}), 401
@@ -242,11 +241,10 @@ def api_gastos():
     return jsonify({"gastos": [dict(f) for f in filas], "dolar": cotizacion_dolar()})
 
 
-# ---------------------------------------------------------------- API JSON (con sesión)
 @app.route("/api/resumen")
 @login_requerido
 def api_resumen():
-    """Punto de acceso propio que devuelve JSON: total y gasto por categoría."""
+    """Total y gasto por categoria."""
     filas = obtener_db().execute(
         "SELECT categoria, ROUND(SUM(monto), 2) AS total, COUNT(*) AS cantidad "
         "FROM gastos WHERE usuario_id = ? GROUP BY categoria ORDER BY total DESC",
@@ -262,7 +260,7 @@ def api_resumen():
     })
 
 
-# ---------------------------------------------------------------- errores
+# errores
 @app.errorhandler(CSRFError)
 def error_csrf(_e):
     return render_template("error.html", codigo=400,

@@ -1,11 +1,15 @@
-// Validación del lado del cliente: solo mejora la experiencia.
-// El servidor vuelve a validar todo (esta validación se saltea desactivando JS).
+// Validacion en el cliente. El servidor valida igual.
 (function () {
   function mostrar(form, campo, mensaje) {
     const input = form.querySelector('[name="' + campo + '"]');
     const salida = form.querySelector('[data-error-de="' + campo + '"]');
     if (salida) salida.textContent = mensaje || '';
     if (input) input.classList.toggle('invalido', Boolean(mensaje));
+  }
+
+  function hoyLocal() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
   }
 
   const reglas = {
@@ -31,7 +35,7 @@
       if (isNaN(monto) || monto <= 0) e.monto = 'El monto tiene que ser mayor a 0.';
       if (!f.categoria.value) e.categoria = 'Elegí una categoría.';
       if (!f.fecha.value) e.fecha = 'Elegí una fecha.';
-      else if (f.fecha.value > new Date().toISOString().slice(0, 10)) e.fecha = 'La fecha no puede ser futura.';
+      else if (f.fecha.value > hoyLocal()) e.fecha = 'La fecha no puede ser futura.';
       return e;
     }
   };
