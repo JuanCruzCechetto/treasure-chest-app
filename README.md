@@ -42,20 +42,6 @@ app y el token.
 | `/api/gastos` | JSON con los gastos del usuario (sesión o `Authorization: Bearer <token>`); lo usa el tablero |
 | `/api/resumen` | JSON con el total en pesos y dólares y el gasto por categoría (requiere sesión) |
 
-## Cómo cumple la consigna
-
-| Requisito | Dónde |
-|---|---|
-| Flask + entorno virtual + dependencias | `requirements.txt`, `.venv` (no se entrega) |
-| Al menos 4 rutas | Diez rutas: ver la tabla de **Rutas** |
-| Plantillas Jinja2 que heredan de una base | `templates/base.html` + `{% extends %}` en todas |
-| Validación en el servidor y en el cliente | `validar_gasto()` y `registro()` en `app.py`; `static/validacion.js`; protección CSRF con Flask-WTF |
-| SQLite persistente | `db.py` → `gastos.db` |
-| Registro/login con contraseña hasheada | `generate_password_hash` / `check_password_hash` (scrypt, Werkzeug) |
-| Endpoints propios que devuelven JSON | `GET /api/gastos` y `GET /api/resumen` |
-| Servicio externo con `requests` + manejo de falla/demora | `cotizacion_dolar()`: `timeout=3`, captura errores y la app sigue andando |
-| Opción elegida: tablero Streamlit + Pandas | `tablero/dashboard.py` (dependencias en `tablero/requirements.txt`) |
-| Claves fuera del código | `.env` (en `.gitignore`), plantilla en `.env.example` |
 
 ## Publicarla (PythonAnywhere, cuenta gratuita)
 
@@ -71,7 +57,4 @@ app y el token.
 5. Crear el `.env` en la carpeta del proyecto con la SECRET_KEY y recargar.
 
 La base SQLite queda en disco, así que los datos sobreviven a los reinicios.
-Ojo: las cuentas gratuitas restringen los sitios externos a una lista permitida; si DolarAPI no
-está en esa lista, la app igual funciona y muestra "Cotización no disponible" (es justamente
-el manejo de falla que pide la consigna).
 
